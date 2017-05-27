@@ -1,0 +1,34 @@
+version: '3'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.4.0
+#    ports:
+#      - "9200:9200"
+#      - "9300:9300"
+  logstash:
+    image: docker.elastic.co/logstash/logstash:5.4.0
+    entrypoint:
+      - logstash
+      - -f
+      - /var/logstash/logstash.conf
+    volumes:
+      - ./logstash.conf:/var/logstash/logstash.conf
+    depends_on:
+      - elasticsearch
+  kibana:
+    image: docker.elastic.co/kibana/kibana:5.4.0
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+  logspout:
+    build:
+      context: ./logspout
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+#     - ROUTE_URIS=logstash://logstash:5000     # Use UDP
+      - ROUTE_URIS=logstash+tcp://logstash:5000 # Use TCP 
+      - RETRY_STARTUP=1
+    depends_on:
+      - logstash

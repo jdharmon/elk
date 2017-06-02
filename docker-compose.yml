@@ -5,28 +5,44 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.4.0
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    hostname: es-host
     environment:
-      - LOGSPOUT=ignore
+      - network.publish_host=es-host
+      - discovery.zen.ping.unicast.hosts=tasks.elasticsearch
+      - discovery.zen.minimum_master_nodes=2
       - xpack.security.enabled=false
-    restart: always
-  logstash:
-    build:
-      context: ./logstash
-    environment:
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
       - LOGSPOUT=ignore
-    restart: always
-    depends_on:
-      - elasticsearch
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          memory: 1G
   kibana:
     image: docker.elastic.co/kibana/kibana:5.4.0
     ports:
       - "5601:5601"
     environment:
+      - xpack.security.enabled=false
       - LOGSPOUT=ignore
-    restart: always
+    depends_on:
+      - elasticsearch
+  logstash:
+    image: sentara/logstash
+    build:
+      context: ./logstash
+    environment:
+      - LOGSPOUT=ignore
     depends_on:
       - elasticsearch
   logspout:
+    image: sentara/logspout
     build:
       context: ./logspout
     volumes:
@@ -34,10 +50,10 @@ services:
     environment:
       - ROUTE_URIS=logstash+tcp://logstash:5000 # Use TCP 
       - RETRY_STARTUP=1
-      - LOGSPOUT=ignore
-    restart: always
     depends_on:
       - logstash
+    deploy:
+      mode: global
       
 volumes:
     elasticsearch-data:

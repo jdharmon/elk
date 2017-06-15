@@ -1,16 +1,12 @@
-version: '3'
+version: '3.2'
 
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.4.0
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
-    ports:
-      - "9200:9200"
-    hostname: es-host
     environment:
-      - network.publish_host=es-host
-      - discovery.zen.ping.unicast.hosts=tasks.elasticsearch
+      - discovery.zen.ping.unicast.hosts=elasticsearch
       - discovery.zen.minimum_master_nodes=2
       - xpack.security.enabled=false
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
@@ -21,6 +17,7 @@ services:
         hard: -1
     deploy:
       replicas: 3
+      endpoint_mode: dnsrr
       resources:
         limits:
           memory: 1G
@@ -34,17 +31,15 @@ services:
     depends_on:
       - elasticsearch
   logstash:
-    image: sentara/logstash
-    build:
-      context: ./logstash
+    image: jdharmon/logstash
+    build: ./logstash
     environment:
       - LOGSPOUT=ignore
     depends_on:
       - elasticsearch
   logspout:
-    image: sentara/logspout
-    build:
-      context: ./logspout
+    image: jdharmon/logspout
+    build: ./logspout
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:

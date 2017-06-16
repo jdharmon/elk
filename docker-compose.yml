@@ -49,6 +49,9 @@ services:
       - logstash
     deploy:
       mode: global
+  curator:
+    image: jdharmon/curator
+    build: ./curator
       
 volumes:
     elasticsearch-data:

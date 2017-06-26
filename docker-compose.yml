@@ -6,6 +6,7 @@ services:
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
     environment:
+      - node.name={{.Service.Name}}.{{.Task.Slot}}
       - discovery.zen.ping.unicast.hosts=elasticsearch
       - discovery.zen.minimum_master_nodes=2
       - xpack.security.enabled=false

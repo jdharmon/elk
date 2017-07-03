@@ -10,5 +10,5 @@ fi
 for host in $@; do
   echo
   echo "[$host]"
-  ssh $host /usr/local/bin/docker system prune -f
+  ssh -o StrictHostKeyChecking=no $host /usr/local/bin/docker system prune -f
 done

@@ -10,5 +10,5 @@ fi
 for host in $@; do
   echo
   echo "[$host]"
-  ssh $host sysctl -w vm.max_map_count=262144
+  ssh -o StrictHostKeyChecking=no $host sysctl -w vm.max_map_count=262144
 done

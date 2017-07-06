@@ -46,6 +46,7 @@ services:
     environment:
       - ROUTE_URIS=logstash+tcp://logstash:5000 # Use TCP 
       - RETRY_STARTUP=1
+      - DOCKER_LABELS=1
     depends_on:
       - logstash
     deploy:
